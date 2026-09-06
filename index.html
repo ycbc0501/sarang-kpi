@@ -380,15 +380,13 @@
     bar.className = current.kind === 'royal' ? 'royal' : current.gained >= current.goal ? 'good' : '';
     const remaining = current.goal - current.gained;
     const daysLeft = Math.max(0, daysBetween(today, current.end));
-    $('t-month-meta').textContent = current.relation === 0
-      ? (remaining > 0 ? `${fmtInt(remaining)}명 더 · ${daysLeft}일 남음` : `목표 달성! 🎉`)
-      : '';
+    $('t-month-meta').textContent = `도달률 ${Math.min(999, Math.round(current.gained / current.goal * 100))}%`;
 
     $('t-pace').textContent = current.status;
     if (current.relation === 0 && current.inMonth.length && current.elapsedDays > 0) {
-      $('t-pace-meta').textContent = `도달률 ${Math.min(999, Math.round(current.gained / current.goal * 100))}%`;
+      $('t-pace-meta').textContent = current.relation === 0 ? `${daysLeft}일 남음` : '';
     } else {
-      $('t-pace-meta').textContent = current.relation === 0 ? '기록이 들어오면 계산돼요.' : '';
+      $('t-pace-meta').textContent = current.relation === 0 ? `${daysLeft}일 남음` : '';
     }
 
     $('months-body').innerHTML = months.map((m) => `
