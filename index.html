@@ -92,9 +92,11 @@
   .tile .value small { font-size: 11px; color: var(--ink-2); margin-left: 3px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
   .tile .meta { color: var(--ink-2); font-size: 11px; line-height: 1.3; margin-top: auto; word-break: keep-all; }
   @media (min-width: 720px) { .tile .label { font-size: 12px; letter-spacing: 0.05em; } .tile .value { font-size: 36px; } .tile .value small { font-size: 15px; margin-left: 5px; } .tile .meta { font-size: 13px; } }
-  .bar { height: 6px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; margin-top: auto; margin-bottom: 8px; }
+  /* the bar sits in a box exactly one caption-line tall, so it lines up with the captions in the other tiles */
+  .bar-wrap { margin-top: auto; font-size: 11px; line-height: 1.3; height: 1.3em; display: flex; align-items: center; }
+  .bar { height: 6px; width: 100%; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; }
   .tile .meta:empty { display: none; }
-  @media (min-width: 720px) { .bar { height: 8px; margin-bottom: 9px; } }
+  @media (min-width: 720px) { .bar-wrap { font-size: 13px; } .bar { height: 8px; } }
   .bar > i { display: block; height: 100%; background: var(--pink); border-radius: 4px; transition: width 300ms ease; }
   .bar > i.good { background: var(--good); }
 
@@ -216,7 +218,7 @@
     <div class="tile">
       <div class="label" id="t-month-label">이번 달 새 팔로워</div>
       <div class="value num" id="t-month">—</div>
-      <div class="bar"><i id="t-month-bar" style="width:0%"></i></div>
+      <div class="bar-wrap"><div class="bar"><i id="t-month-bar" style="width:0%"></i></div></div>
       <div class="meta" id="t-month-meta"></div>
     </div>
     <div class="tile">
