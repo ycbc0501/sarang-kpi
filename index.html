@@ -392,7 +392,7 @@
 
     $('t-pace').textContent = current.status;
     if (current.relation === 0 && current.inMonth.length && current.elapsedDays > 0) {
-      $('t-pace-meta').textContent = `도달률 ${String(Math.min(999, Math.round(current.gained / current.goal * 100))).padStart(2, '0')}%`;
+      $('t-pace-meta').textContent = `도달률 ${Math.min(999, Math.round(current.gained / current.goal * 100))}%`;
     } else {
       $('t-pace-meta').textContent = current.relation === 0 ? '기록이 들어오면 계산돼요.' : '';
     }
