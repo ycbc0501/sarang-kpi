@@ -210,6 +210,7 @@
     <div class="tile">
       <div class="label">지금 팔로워</div>
       <div class="value num" id="t-now">—</div>
+      <div class="meta" id="t-now-meta"></div>
     </div>
     <div class="tile">
       <div class="label" id="t-month-label">이번 달 새 팔로워</div>
@@ -362,6 +363,7 @@
     $('check-hint').textContent = '11PM 자동갱신';
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
+    $('t-now-meta').textContent = `(${longDate(isoDate(startDate))} ${fmtInt(config.baseline)}명)`;
 
     $('t-month-label').textContent = monthLabel(current.key, false) + ' 새 팔로워';
     $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}</small>`;
