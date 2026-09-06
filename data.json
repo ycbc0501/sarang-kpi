@@ -1,0 +1,21 @@
+{
+  "config": {
+    "handle": "clairelee_sunshine",
+    "displayName": "Claire Lee",
+    "platform": "Instagram",
+    "baseline": 271,
+    "startDate": "2026-09-07",
+    "startMonth": "2026-09",
+    "firstTarget": 10,
+    "monthlyTarget": 15,
+    "checkTime": "매일 밤 11시"
+  },
+  "entries": [
+    {
+      "date": "2026-09-07",
+      "count": 271,
+      "note": "시작 기록",
+      "source": "auto"
+    }
+  ]
+}

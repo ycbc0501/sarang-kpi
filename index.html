@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사랑 찾는 KPI</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%92%97%3C/text%3E%3C/svg%3E">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #fff3f7;
+    --dot: #ffd6e3;
+    --surface: #ffffff;
+    --surface-2: #fff7fa;
+    --line: #ffd9e4;
+    --line-strong: #f5b8cc;
+    --ink: #2b2b2b;
+    --ink-2: #7a5d68;
+    --ink-3: #b08e9b;
+    --pink: #f06292;
+    --pink-deep: #e0407a;
+    --bow: #e53950;
+    --nose: #f5c542;
+    --wash: rgba(240, 98, 146, 0.12);
+    --target: #c98fa9;
+    --good: #2f9e5b;
+    --good-bg: #e3f6ea;
+    --warn: #c9861a;
+    --warn-bg: #fff2d9;
+    --bad: #e53950;
+    --bad-bg: #ffe3e6;
+    --neutral-bg: #f6e6ec;
+    --shadow: 0 2px 4px rgba(229, 57, 80, 0.06), 0 10px 28px rgba(240, 98, 146, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background-color: var(--ground);
+    background-image: radial-gradient(var(--dot) 1.6px, transparent 1.7px);
+    background-size: 22px 22px;
+    color: var(--ink);
+    font-family: "Nunito", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, .display { font-family: "Jua", "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 400; margin: 0; text-wrap: balance; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 980px; margin: 0 auto; padding: 18px 14px 48px; display: grid; gap: 14px; }
+  @media (min-width: 720px) { .page { padding: 28px 22px 64px; gap: 18px; } }
+
+  header {
+    background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 18px 18px 16px;
+    border: 2px solid var(--line); position: relative; overflow: hidden;
+  }
+  header::after {
+    content: ""; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%;
+    background: var(--wash); pointer-events: none;
+  }
+  .head-row { display: flex; align-items: center; gap: 12px; position: relative; }
+  .bow { width: 52px; height: 42px; flex: none; }
+  .who { position: relative; flex: none; width: 64px; height: 64px; }
+  .who img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--pink); box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(240, 98, 146, 0.3); display: block; background: var(--surface-2); }
+  .who .bow { position: absolute; width: 34px; height: 28px; right: -12px; top: -10px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
+  .love { color: var(--pink-deep); font-weight: 800; }
+  .cheer { margin-top: 6px; font-size: 13.5px; color: var(--ink-2); position: relative; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 800; }
+  header h1 { font-size: 30px; line-height: 1.1; color: var(--pink-deep); margin-top: 2px; }
+  header .sub { color: var(--ink-2); margin-top: 8px; font-size: 14.5px; position: relative; }
+  .handle { font-size: 14px; color: var(--ink-3); font-weight: 800; margin-top: 2px; }
+  .head-status { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: relative; }
+  @media (min-width: 720px) { header { padding: 22px 26px 20px; } header h1 { font-size: 40px; } .who { width: 80px; height: 80px; } .who img { width: 80px; height: 80px; } .who .bow { width: 40px; height: 33px; right: -14px; top: -12px; } }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; line-height: 1.3; white-space: nowrap; }
+  .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .pill.good { background: var(--good-bg); color: var(--good); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.bad { background: var(--bad-bg); color: var(--bad); }
+  .pill.neutral { background: var(--neutral-bg); color: var(--ink-2); }
+  .pill.big { font-size: 15px; padding: 6px 14px; }
+
+  .tiles { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 720px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+  .tile {
+    background: var(--surface); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); border: 2px solid var(--line);
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+  }
+  @media (min-width: 720px) { .tile { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-height: 126px; padding: 16px 18px; } }
+  .tile .label { font-size: 12px; letter-spacing: 0.05em; color: var(--ink-3); font-weight: 800; grid-column: 1 / -1; }
+  .tile .value { font-family: "Jua", "Nunito", system-ui, sans-serif; font-size: 32px; line-height: 1.05; color: var(--ink); }
+  .tile .value small { font-size: 15px; color: var(--ink-2); margin-left: 5px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
+  .tile .meta { color: var(--ink-2); font-size: 13px; grid-column: 1 / -1; }
+  @media (min-width: 720px) { .tile .meta { margin-top: auto; } .tile .value { font-size: 36px; } }
+  .bar { height: 8px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; grid-column: 1 / -1; }
+  .bar > i { display: block; height: 100%; background: var(--pink); border-radius: 4px; transition: width 300ms ease; }
+  .bar > i.good { background: var(--good); }
+
+  .card { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); border: 2px solid var(--line); padding: 14px 14px 12px; }
+  @media (min-width: 720px) { .card { padding: 18px 20px 16px; } }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .card h2 { font-size: 19px; color: var(--pink-deep); }
+  .hint { color: var(--ink-3); font-size: 12.5px; }
+
+  .legend { display: flex; gap: 12px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .key { width: 18px; height: 0; border-top: 2.5px solid var(--pink); border-radius: 2px; }
+  .key.target { border-top-style: dashed; border-top-color: var(--target); }
+  .key.today { border-top: 0; border-left: 2px solid var(--line-strong); width: 0; height: 12px; }
+
+  .chart-wrap { position: relative; width: 100%; }
+  .chart-wrap svg { width: 100%; display: block; }
+  .chart-wrap .empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--ink-2); padding: 20px; }
+  .tooltip {
+    position: absolute; pointer-events: none; background: var(--surface); border: 2px solid var(--line-strong);
+    border-radius: 12px; padding: 8px 10px; font-size: 13px; box-shadow: var(--shadow); min-width: 150px; transform: translate(-50%, -100%);
+    opacity: 0; transition: opacity 100ms ease; z-index: 2;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip b { display: block; font-weight: 800; margin-bottom: 2px; color: var(--pink-deep); }
+  .tooltip .row { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); }
+  .tooltip .row span:last-child { color: var(--ink); font-weight: 800; }
+
+  .two { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
+  @media (min-width: 860px) { .two { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; } }
+
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 340px; }
+  th { text-align: left; font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-3); font-weight: 800; padding: 6px 8px; border-bottom: 2px solid var(--line); white-space: nowrap; }
+  td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  tr.total td { border-top: 2px solid var(--line-strong); border-bottom: 0; font-weight: 800; background: var(--surface-2); }
+  tr.total td:first-child { color: var(--pink-deep); }
+  td.r, th.r { text-align: right; }
+  tr.current td:first-child { font-weight: 800; color: var(--pink-deep); }
+
+  .entries { list-style: none; margin: 0; padding: 0 4px 0 0; display: grid; max-height: 380px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .entries::-webkit-scrollbar { width: 6px; } .entries::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  .entries li { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px 10px; align-items: center; padding: 9px 2px; border-top: 1px solid var(--line); font-size: 14px; }
+  .entries li:first-child { border-top: 0; }
+  .entries li .d { color: var(--ink-2); font-weight: 700; }
+  .entries li .n { color: var(--ink-3); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .entries li .c { font-weight: 800; text-align: right; }
+  .entries li .delta { display: inline-block; min-width: 3.2em; text-align: right; margin-left: 6px; font-size: 12.5px; color: var(--ink-3); font-weight: 700; }
+  .entries li .delta.neg { color: var(--bad); }
+  .entries li .delta.pos { color: var(--good); }
+  .stale { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 800; margin-bottom: 10px; }
+  .foot { text-align: center; color: var(--ink-3); font-size: 12.5px; padding-top: 6px; }
+  .foot b { color: var(--pink-deep); font-weight: 800; }
+
+  .pill.royal { background: #efe6ff; color: #7b3fe4; }
+  .bar > i.royal { background: #a06bff; }
+  .demo-btn { border: 2px solid var(--line-strong); background: var(--surface); color: var(--pink-deep); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .demo-btn:hover { background: var(--surface-2); }
+  .demo-btn:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+  .demo-banner { background: #efe6ff; color: #7b3fe4; border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .entries li .gain { font-weight: 800; color: var(--pink-deep); text-align: right; white-space: nowrap; }
+  .entries li .gain.zero { color: var(--ink-3); font-weight: 700; }
+  .entries li .net { font-size: 12px; color: var(--ink-3); font-weight: 700; white-space: nowrap; }
+  .entries li .net.neg { color: var(--bad); }
+  .entries li { grid-template-columns: 52px 1fr auto; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 10px; }
+  .tab { border: 2px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .tab.on { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .tab:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+  .who-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px 2px 2px; font-size: 12px; font-weight: 800; color: var(--ink); }
+  .chip i { width: 18px; height: 18px; border-radius: 50%; background: var(--pink); color: #fff; display: inline-grid; place-items: center; font-style: normal; font-size: 10px; overflow: hidden; }
+  .chip i img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fly-heart { position: fixed; pointer-events: none; z-index: 50; font-size: 22px; line-height: 1; will-change: transform, opacity; animation: fly 1.4s ease-out forwards; }
+  @keyframes fly {
+    0%   { transform: translate(-50%, -50%) scale(0.6) rotate(var(--r0)); opacity: 0; }
+    12%  { opacity: 1; transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(1.05) rotate(var(--r1)); }
+    60%  { transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(1) rotate(var(--r0)); opacity: 0.95; }
+    100% { transform: translate(calc(-50% + var(--x3)), calc(-50% + var(--y3))) scale(0.8) rotate(var(--r1)); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .fly-heart { animation-duration: 0.5s; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <div class="head-row">
+      <div class="who">
+        <img src="data:image/jpeg;base64,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" alt="클레어 프로필 사진" width="64" height="64">
+        <svg class="bow" viewBox="0 0 64 52" aria-hidden="true">
+          <path d="M30 26 C22 6, 4 4, 3 18 C2 30, 16 36, 30 26 Z" fill="#e53950"/>
+          <path d="M34 26 C42 6, 60 4, 61 18 C62 30, 48 36, 34 26 Z" fill="#e53950"/>
+          <path d="M30 27 C22 46, 6 48, 5 36 C4 28, 18 26, 30 27 Z" fill="#e53950"/>
+          <path d="M34 27 C42 46, 58 48, 59 36 C60 28, 46 26, 34 27 Z" fill="#e53950"/>
+          <path d="M12 16 C10 20, 12 26, 18 28" stroke="#ff8fa3" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M52 16 C54 20, 52 26, 46 28" stroke="#ff8fa3" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="32" cy="26" r="7" fill="#c62839"/>
+          <circle cx="30" cy="24" r="2.2" fill="#ff8fa3"/>
+        </svg>
+      </div>
+      <div>
+        <h1>사랑 찾는 KPI</h1>
+        <div class="handle" id="handle">@clairelee_sunshine</div>
+      </div>
+    </div>
+    <div class="sub">클레어를 결혼하게 해주는 <span class="love">마법의 KPI ♥</span></div>
+    <div class="cheer" id="cheer"></div>
+  </header>
+
+  <div class="demo-banner" id="demo-banner" hidden>
+    <span>✨ 예시예요. 10월 20일이라고 치고, 9월이 끝나고 10월이 진행 중인 모습이에요.</span>
+    <button class="demo-btn" type="button" id="demo-off">실제 데이터로</button>
+  </div>
+
+  <section class="tiles">
+    <div class="tile">
+      <div class="label">지금 팔로워</div>
+      <div class="value num" id="t-now">—</div>
+      <div class="meta" id="t-now-meta"></div>
+    </div>
+    <div class="tile">
+      <div class="label" id="t-month-label">이번 달 새 팔로워</div>
+      <div class="value num" id="t-month">—</div>
+      <div class="bar"><i id="t-month-bar" style="width:0%"></i></div>
+      <div class="meta" id="t-month-meta"></div>
+    </div>
+    <div class="tile">
+      <div class="label">페이스</div>
+      <div class="value" id="t-pace">—</div>
+      <div class="meta" id="t-pace-meta"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 id="chart-title">새 팔로워</h2>
+      <div class="legend">
+        <span><i class="key" style="border-top-width:8px;border-radius:3px;width:10px;opacity:.55"></i>새 팔로워</span>
+        <span><i class="key"></i>누적</span>
+        <span><i class="key target"></i>목표선</span>
+        <button class="demo-btn" type="button" id="demo-on">✨ 예시로 보기</button>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="chart-wrap" id="chart-wrap">
+      <svg id="chart" role="img" aria-label="날짜별 새 팔로워와 누적, 목표선"></svg>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <div class="card-head">
+        <h2>월별 성적표</h2>
+        <span class="hint">새로 만난 사람만 세요 💗</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>월</th><th class="r">목표</th><th class="r">새 팔로워</th><th>상태</th></tr>
+          </thead>
+          <tbody id="months-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>매일 기록</h2>
+        <span class="hint" id="check-hint"></span>
+      </div>
+      <div class="stale" id="stale" hidden></div>
+      <ul class="entries" id="entries"></ul>
+    </section>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const fmtInt = (n) => Math.round(n).toLocaleString('ko-KR');
+  const signed = (n) => n > 0 ? '+' + fmtInt(n) : n < 0 ? '−' + fmtInt(-n) : '±0';
+  const DAY = 86400000;
+  const pad = (n) => String(n).padStart(2, '0');
+  const isoDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parseDate = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d || 1); };
+  const monthKeyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  const monthStart = (key) => { const [y, m] = key.split('-').map(Number); return new Date(y, m - 1, 1); };
+  const monthEnd = (key) => { const [y, m] = key.split('-').map(Number); return new Date(y, m, 0); };
+  const addMonths = (key, n) => { const [y, m] = key.split('-').map(Number); return monthKeyOf(new Date(y, m - 1 + n, 1)); };
+  const monthDiff = (a, b) => { const [ay, am] = a.split('-').map(Number); const [by, bm] = b.split('-').map(Number); return (by - ay) * 12 + (bm - am); };
+  const monthLabel = (key, withYear) => { const [y, m] = key.split('-').map(Number); return (withYear ? y + '년 ' : '') + m + '월'; };
+  const shortDate = (s) => { const d = parseDate(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const longDate = (s) => { const d = parseDate(s); return `${d.getMonth() + 1}월 ${d.getDate()}일`; };
+  const daysBetween = (a, b) => Math.round((b - a) / DAY);
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  const realToday = new Date(); realToday.setHours(0, 0, 0, 0);
+  let today = realToday, todayKey = monthKeyOf(today);
+
+  let config = null, realEntries = [];
+  const clean = (list) => list.filter((e) => /^\d{4}-\d{2}-\d{2}$/.test(String(e.date)) && Number.isFinite(Number(e.count)))
+    .map((e) => ({ date: String(e.date), count: Number(e.count), note: e.note ? String(e.note) : '', source: e.source === 'auto' ? 'auto' : 'manual', who: Array.isArray(e.who) ? e.who.map((w) => typeof w === 'string' ? { id: w } : { id: String(w.id || ''), pfp: w.pfp && /^data:image\//.test(String(w.pfp)) ? String(w.pfp) : '' }).filter((w) => w.id) : [] }))
+    .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  let startDate = realToday;
+  function loadData(raw) {
+    config = raw.config; realEntries = clean((raw.entries || []).slice()); entries = realEntries;
+    startDate = /^\d{4}-\d{2}-\d{2}$/.test(String(config.startDate)) ? parseDate(config.startDate) : monthStart(config.startMonth);
+    config.startMonth = monthKeyOf(startDate);
+  }
+
+  // ---- example data: pretend it is Oct 20 so a finished month and a running month both show ----
+  function sampleEntries() {
+    const end = new Date(startDate.getTime() + 43 * DAY);
+    const pattern = [0, 2, 1, 0, 3, 0, 1, 2, 0, 1, 4, 0, 0, 2, 1, 0, 3, 1, 0, 2, 0, 1, 2, 0, 1, 0, 3, 1, 0, 2, 1, 0, 2, 0, 1, 3, 0, 1, 0, 2, 1, 0, 2, 1];
+    const drops = { 4: 1, 9: 2, 17: 1, 23: 1, 31: 1, 38: 1 };
+    const notes = { 2: '릴스 올린 날', 5: '친구 태그 스토리', 11: '카페 사진 반응 좋음', 17: '조용한 날', 27: '여행 사진', 35: '10월 첫 릴스' };
+    const names = ['minji.k', 'sunny_days', 'jay.park', 'hana_lee', 'dowon__', 'yerin.c', 'kim.taehoon', 'soo.jpg', 'haneul_h', 'jinwoo.o', 'bora__', 'seojun.k'];
+    const out = []; let count = config.baseline; let ni = 0;
+    for (let i = 0; ; i++) {
+      const d = new Date(startDate.getTime() + i * DAY);
+      if (d > end) break;
+      const g = i === 0 ? 0 : pattern[i % pattern.length];
+      count += g - (drops[i] || 0);
+      const who = []; for (let k = 0; k < g; k++) who.push({ id: names[ni++ % names.length] });
+      out.push({ date: isoDate(d), count, note: notes[i] || (i === 0 ? '시작 기록' : ''), source: 'auto', who });
+    }
+    return { entries: out, today: end };
+  }
+
+  let demo = false, entries = realEntries, months = [], series = [], selectedKey = null;
+
+  // ---- KPI math: only new followers count; unfollows are ignored ----
+  function computeSeries() {
+    return entries.map((e, i) => {
+      const prev = i > 0 ? entries[i - 1].count : config.baseline;
+      const net = e.count - prev;
+      return { ...e, net, gained: i === 0 ? 0 : Math.max(0, net) };
+    });
+  }
+
+  function tier(gained, goal, expected, relation, hasData, elapsedDays) {
+    if (relation < 0) return { status: '예정 🗓️', kind: 'neutral' };
+    if (relation > 0) {
+      if (!hasData) return { status: '기록 없음', kind: 'neutral' };
+      if (gained >= goal * 1.5) return { status: '압도적 👑', kind: 'royal' };
+      if (gained >= goal) return { status: '목표 달성 🎉', kind: 'good' };
+      return { status: '아쉬워요 😢', kind: 'bad' };
+    }
+    if (!hasData) return { status: '아직 기록 없음', kind: 'neutral' };
+    if (gained >= goal * 1.5) return { status: '압도적 👑', kind: 'royal' };
+    if (gained >= goal) return { status: '목표 달성 🎉', kind: 'good' };
+    if (gained >= expected) return { status: '잘하고 있어요 💖', kind: 'good' };
+    if (gained === 0 && elapsedDays <= 3) return { status: '이제 시작 🌱', kind: 'neutral' };
+    if (gained >= expected * 0.6) return { status: '조금만 더 🙌', kind: 'warn' };
+    return { status: '분발 필요 😤', kind: 'bad' };
+  }
+
+  function buildMonths() {
+    const lastEntryKey = series.length ? monthKeyOf(parseDate(series[series.length - 1].date)) : config.startMonth;
+    let lastKey = monthDiff(config.startMonth, todayKey) >= 0 ? todayKey : config.startMonth;
+    if (monthDiff(lastKey, lastEntryKey) > 0) lastKey = lastEntryKey;
+    const n = monthDiff(config.startMonth, lastKey) + 1;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const key = addMonths(config.startMonth, i);
+      const mStart = monthStart(key), end = monthEnd(key);
+      const start = i === 0 ? startDate : mStart;            // the first month starts on the KPI start date
+      const startIso = isoDate(start), endIso = isoDate(end);
+      const inMonth = series.filter((e) => e.date >= startIso && e.date <= endIso);
+      const goal = i === 0 ? config.firstTarget : config.monthlyTarget;
+      const gained = inMonth.reduce((a, e) => a + e.gained, 0);
+      const latest = inMonth.length ? inMonth[inMonth.length - 1] : null;
+      const relation = monthDiff(key, todayKey);
+      const totalDays = daysBetween(start, end) + 1;
+      const elapsedDays = relation === 0 ? Math.min(totalDays, daysBetween(start, today) + 1) : (relation > 0 ? totalDays : 0);
+      const expected = goal * (elapsedDays / totalDays);
+      const t = tier(gained, goal, expected, relation, inMonth.length > 0, elapsedDays);
+      out.push({ i, key, start, end, goal, gained, latest, relation, totalDays, elapsedDays, inMonth, ...t });
+    }
+    return out;
+  }
+
+  function render() {
+    if (!config) return;
+    series = computeSeries();
+    months = buildMonths();
+    const current = months.find((m) => m.relation === 0) || months[months.length - 1];
+    if (!selectedKey || !months.some((m) => m.key === selectedKey)) selectedKey = current.key;
+    const latest = series.length ? series[series.length - 1] : null;
+
+    $('demo-banner').hidden = !demo;
+    $('demo-on').hidden = demo;
+    $('handle').textContent = '@' + String(config.handle).replace(/^@/, '');
+    const cheers = ['오늘도 예쁘게 빛나는 중 ♥', '운명의 팔로워가 오고 있어요 ♥', '한 명 한 명이 다 인연이에요 ♥', '이 페이지를 연 당신, 이미 사랑스러움 ♥', '오늘 스토리 하나 올리면 +1 ♥', '미래의 남편도 이 숫자를 보고 있을지도 ♥', '꾸준함이 제일 예쁜 매력 ♥'];
+    $('cheer').textContent = cheers[(today.getDate() + today.getMonth()) % cheers.length];
+    $('check-hint').textContent = `${config.checkTime || '매일'} 자동 체크`;
+
+    $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
+    const grossAll = series.reduce((a, e) => a + e.gained, 0);
+    $('t-now-meta').textContent = latest ? `새로 만난 사람 +${fmtInt(grossAll)}명 💗` : '아직 기록이 없어요.';
+
+    $('t-month-label').textContent = monthLabel(current.key, false) + ' 새 팔로워';
+    $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}명</small>`;
+    const pct = Math.max(0, Math.min(100, (current.gained / current.goal) * 100));
+    const bar = $('t-month-bar'); bar.style.width = pct + '%';
+    bar.className = current.kind === 'royal' ? 'royal' : current.gained >= current.goal ? 'good' : '';
+    const remaining = current.goal - current.gained;
+    const daysLeft = Math.max(0, daysBetween(today, current.end));
+    $('t-month-meta').textContent = current.relation === 0
+      ? (remaining > 0 ? `${fmtInt(remaining)}명 더 · ${daysLeft}일 남음` : `${daysLeft}일 남기고 목표 달성! 🎉`)
+      : '';
+
+    $('t-pace').textContent = current.status;
+    if (current.relation === 0 && current.inMonth.length && current.elapsedDays > 0) {
+      $('t-pace-meta').textContent = `도달률 ${String(Math.min(999, Math.round(current.gained / current.goal * 100))).padStart(2, '0')}%`;
+    } else {
+      $('t-pace-meta').textContent = current.relation === 0 ? '기록이 들어오면 계산돼요.' : '';
+    }
+
+    $('months-body').innerHTML = months.map((m) => `
+      <tr class="${m.relation === 0 ? 'current' : ''}">
+        <td>${monthLabel(m.key, false)}${m.relation === 0 ? ' <span class="hint">(지금)</span>' : ''}</td>
+        <td class="r num">+${fmtInt(m.goal)}</td>
+        <td class="r num">${m.inMonth.length ? '+' + fmtInt(m.gained) : '—'}</td>
+        <td><span class="pill ${m.kind}">${m.status}</span></td>
+      </tr>`).join('') + (() => {
+        const done = months.filter((m) => m.relation >= 0);
+        const goalSum = done.reduce((a, m) => a + m.goal, 0);
+        const gainSum = done.reduce((a, m) => a + m.gained, 0);
+        const t = gainSum >= goalSum * 1.5 ? { status: '압도적 👑', kind: 'royal' } : gainSum >= goalSum ? { status: '목표 달성 🎉', kind: 'good' } : { status: `${fmtInt(Math.round(gainSum / Math.max(1, goalSum) * 100))}% 진행`, kind: 'neutral' };
+        return `<tr class="total">
+          <td>총계</td>
+          <td class="r num">+${fmtInt(goalSum)}</td>
+          <td class="r num">+${fmtInt(gainSum)}</td>
+          <td><span class="pill ${t.kind}">${t.status}</span></td>
+        </tr>`;
+      })();
+
+    const list = series.slice().reverse();
+    $('entries').innerHTML = list.length ? list.map((e, idx) => {
+      const isFirst = idx === list.length - 1;
+      const gainTxt = isFirst ? '시작 🌱' : e.gained > 0 ? `+${fmtInt(e.gained)} 💗` : '+0';
+      const who = e.who.length ? `<div class="who-list">${e.who.map(chip).join('')}</div>` : '';
+      return `<li>
+        <span class="d">${shortDate(e.date)}</span>
+        <span class="n" style="white-space:normal">${escapeHtml(e.note)}${who}</span>
+        <span class="gain ${e.gained > 0 || isFirst ? '' : 'zero'}">${gainTxt}</span>
+      </li>`;
+    }).join('') : '<li><span class="n">아직 기록이 없어요.</span></li>';
+
+    const lastAuto = entries.filter((e) => e.source === 'auto').pop();
+    const staleDays = lastAuto ? daysBetween(parseDate(lastAuto.date), today) : null;
+    const stale = $('stale');
+    if (!demo && staleDays !== null && staleDays >= 2) { stale.hidden = false; stale.textContent = `${longDate(lastAuto.date)} 이후로 자동 기록이 없어요.`; }
+    else stale.hidden = true;
+
+    $('foot').innerHTML = `클레어의 팔로워는 <b>${config.checkTime || '매일'}</b>에 요정이 자동으로 세어요 ♥ 마지막 기록 ${latest ? longDate(latest.date) : '없음'}.`;
+
+    // month tabs above the chart: past months stay clickable, the running month is selected by default
+    $('tabs').innerHTML = months.map((m) => `<button type="button" class="tab ${m.key === selectedKey ? 'on' : ''}" data-key="${m.key}">${monthLabel(m.key, false)}${m.relation === 0 ? ' · 지금' : ''}</button>`).join('');
+    const sel = months.find((m) => m.key === selectedKey) || current;
+    $('chart-title').textContent = `${monthLabel(sel.key, false)} 새 팔로워`;
+    drawChart(sel);
+  }
+
+  function chip(w) {
+    const av = w.pfp ? `<img src="${w.pfp}" alt="">` : '♥';
+    return `<span class="chip"><i>${av}</i>${escapeHtml(w.id)}</span>`;
+  }
+
+  // ---- chart: one month, from the KPI start date for the first month ----
+  let chartState = null;
+  function drawChart(m) {
+    const svg = $('chart'), wrap = $('chart-wrap');
+    const W = Math.max(300, Math.floor(wrap.clientWidth || 600));
+    const narrow = W < 520;
+    const H = narrow ? 250 : 310;
+    const padL = narrow ? 30 : 40, padR = narrow ? 14 : 20, padT = 30, padB = 34;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+    const days = m.totalDays;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const dayIndex = (d) => daysBetween(m.start, d);          // 0-based slot within the period
+    const xd = (i) => padL + ((i + 0.5) / days) * plotW;
+    const xEdge = (i) => padL + (i / days) * plotW;
+    const cum = []; let acc = 0;
+    m.inMonth.forEach((e) => { acc += e.gained; cum.push({ i: dayIndex(parseDate(e.date)), gained: e.gained, cum: acc, e }); });
+    const yMaxRaw = Math.max(m.goal, ...cum.map((c) => c.cum), 1) * 1.15;
+    const ticks = niceTicks(0, yMaxRaw, narrow ? 4 : 5);
+    const yMax = ticks[ticks.length - 1];
+    const ys = (v) => padT + (1 - v / yMax) * plotH;
+    const fs = narrow ? 11 : 12;
+    const font = "Nunito, 'Noto Sans KR', sans-serif";
+    const mm = m.start.getMonth() + 1;
+    const lbl = (i) => { const d = new Date(m.start.getTime() + i * DAY); return `${d.getMonth() + 1}/${d.getDate()}`; };
+    let out = '';
+    for (const t of ticks) {
+      out += `<line x1="${padL}" x2="${W - padR}" y1="${ys(t)}" y2="${ys(t)}" stroke="#ffe1ea" stroke-width="1"/>`;
+      out += `<text x="${padL - 6}" y="${ys(t) + 4}" text-anchor="end" font-size="${fs}" fill="#b08e9b" font-family="${font}" font-weight="700">${fmtInt(t)}</text>`;
+    }
+    const tickIdx = []; for (let i = 0; i < days; i += 7) tickIdx.push(i);
+    if (days - 1 - tickIdx[tickIdx.length - 1] >= 3) tickIdx.push(days - 1);
+    tickIdx.forEach((i) => {
+      out += `<line x1="${xd(i)}" x2="${xd(i)}" y1="${padT + plotH}" y2="${padT + plotH + 4}" stroke="#f5b8cc" stroke-width="1"/>`;
+      out += `<text x="${xd(i)}" y="${H - padB + 18}" text-anchor="middle" font-size="${fs}" fill="#7a5d68" font-family="${font}" font-weight="700">${lbl(i)}</text>`;
+    });
+    out += `<path d="M${xEdge(0)},${ys(0)} L${xEdge(days)},${ys(m.goal)}" fill="none" stroke="#c98fa9" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+    out += `<text x="${xEdge(days) - 4}" y="${ys(m.goal) - 7}" text-anchor="end" font-size="${fs}" fill="#7a5d68" font-family="${font}" font-weight="700">목표 ${fmtInt(m.goal)}명</text>`;
+    const bw = Math.min(18, Math.max(4, plotW / days - 3));
+    cum.forEach((c) => {
+      if (c.gained <= 0) return;
+      const x = xd(c.i) - bw / 2, y = ys(c.gained), h = ys(0) - y;
+      out += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="${Math.min(4, bw / 2)}" fill="#f06292" opacity="0.35"/>`;
+      if (!narrow || c.gained >= 2) out += `<text x="${xd(c.i)}" y="${y - 4}" text-anchor="middle" font-size="${fs - 1}" fill="#e0407a" font-family="${font}" font-weight="800">+${c.gained}</text>`;
+    });
+    if (cum.length) {
+      const pts = [{ x: xEdge(0), y: ys(0) }].concat(cum.map((c) => ({ x: xd(c.i), y: ys(c.cum) })));
+      out += `<path d="${pts.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ')}" fill="none" stroke="#f06292" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+      const last = pts[pts.length - 1];
+      out += heart(last.x, last.y, narrow ? 7 : 8);
+      out += `<text x="${last.x}" y="${last.y - 15}" text-anchor="middle" font-size="${fs + 1}" font-weight="800" fill="#2b2b2b" font-family="${font}">+${fmtInt(acc)}</text>`;
+    }
+    if (m.relation === 0) {
+      const ti = dayIndex(today);
+      if (ti >= 0 && ti < days) {
+        const tx = xd(ti);
+        out += `<line x1="${tx}" x2="${tx}" y1="${padT}" y2="${padT + plotH}" stroke="#f5b8cc" stroke-width="2"/>`;
+        const anchor = tx > W - 60 ? 'end' : tx < padL + 40 ? 'start' : 'middle';
+        out += `<text x="${tx}" y="${padT - 10}" text-anchor="${anchor}" font-size="${fs}" fill="#e0407a" font-family="${font}" font-weight="800">오늘 ${lbl(ti)}</text>`;
+      }
+    }
+    if (!cum.length) out += `<text x="${padL + plotW / 2}" y="${padT + plotH / 2}" text-anchor="middle" font-size="${fs + 1}" fill="#b08e9b" font-family="${font}" font-weight="700">${m.relation < 0 ? '아직 시작 전이에요' : '첫 기록이 들어오면 여기에 하트가 생겨요 💗'}</text>`;
+    out += `<rect id="hover-rect" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent"/>`;
+    svg.innerHTML = out;
+    chartState = { cum, W, xd, ys, m };
+    wireHover();
+  }
+
+  function heart(cx, cy, s) {
+    const d = `M${cx},${cy + s * 0.75} C${cx - s * 1.6},${cy - s * 0.4} ${cx - s * 0.6},${cy - s * 1.3} ${cx},${cy - s * 0.45} C${cx + s * 0.6},${cy - s * 1.3} ${cx + s * 1.6},${cy - s * 0.4} ${cx},${cy + s * 0.75} Z`;
+    return `<path d="${d}" fill="#e53950" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+
+  function niceTicks(min, max, n) {
+    const raw = Math.max(0.5, (max - min) / n);
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const candidates = [1, 2, 2.5, 5, 10].map((m) => m * mag);
+    const step = candidates.find((s) => s >= raw) || candidates[candidates.length - 1];
+    const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+    const ticks = []; for (let v = lo; v <= hi + 1e-9; v += step) ticks.push(Math.round(v * 1000) / 1000);
+    return ticks;
+  }
+
+  function wireHover() {
+    const svg = $('chart'), tip = $('tooltip'), rect = $('hover-rect');
+    if (!rect || !chartState || !chartState.cum.length) return;
+    const show = (clientX) => {
+      const box = svg.getBoundingClientRect();
+      const px = (clientX - box.left) * (chartState.W / box.width);
+      let best = null;
+      for (const c of chartState.cum) { if (!best || Math.abs(chartState.xd(c.i) - px) < Math.abs(chartState.xd(best.i) - px)) best = c; }
+      if (!best) return;
+      const who = best.e.who.length ? `<div class="who-list">${best.e.who.map(chip).join('')}</div>`
+        : (best.gained > 0 ? `<div class="row"><span class="hint">누군지는 인스타가 안 알려줘요 🙈</span></div>` : '');
+      tip.innerHTML = `<b>${longDate(best.e.date)} · +${fmtInt(best.gained)} 💗</b>${who}`;
+      const scale = box.width / chartState.W;
+      tip.style.left = Math.max(90, Math.min(box.width - 90, chartState.xd(best.i) * scale)) + 'px';
+      tip.style.top = (chartState.ys(best.cum) * scale - 16) + 'px';
+      tip.classList.add('show');
+    };
+    const hide = () => tip.classList.remove('show');
+    rect.addEventListener('mousemove', (ev) => show(ev.clientX));
+    rect.addEventListener('mouseleave', hide);
+    rect.addEventListener('touchstart', (ev) => show(ev.touches[0].clientX), { passive: true });
+    rect.addEventListener('touchmove', (ev) => show(ev.touches[0].clientX), { passive: true });
+    rect.addEventListener('touchend', () => setTimeout(hide, 2000));
+  }
+
+  // ---- month tabs / example toggle ----
+  $('tabs').addEventListener('click', (ev) => { const b = ev.target.closest('.tab'); if (!b || !config) return; selectedKey = b.dataset.key; render(); });
+  $('demo-on').addEventListener('click', () => { if (!config) return; demo = true; const s = sampleEntries(); entries = s.entries; today = s.today; todayKey = monthKeyOf(today); selectedKey = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('demo-off').addEventListener('click', () => { demo = false; entries = realEntries; today = realToday; todayKey = monthKeyOf(today); selectedKey = null; render(); });
+
+  // ---- tap anywhere: hearts flutter up with a little "뾱" ----
+  let audio = null;
+  function boop() {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+      const t = audio.currentTime;
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(980, t + 0.06); o.frequency.exponentialRampToValueAtTime(700, t + 0.14);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t + 0.18);
+    } catch (e) { /* no sound available */ }
+  }
+  const HEARTS = ['💗', '💖', '💕', '💓', '♥'];
+  function flutter(x, y) {
+    const n = 4 + Math.floor(Math.random() * 3);
+    for (let k = 0; k < n; k++) {
+      const el = document.createElement('span');
+      el.className = 'fly-heart'; el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+      const dir = Math.random() < 0.5 ? -1 : 1, spread = 30 + Math.random() * 70, rise = 90 + Math.random() * 90;
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      el.style.fontSize = (16 + Math.random() * 12) + 'px';
+      el.style.setProperty('--x1', dir * spread * 0.3 + 'px'); el.style.setProperty('--y1', -rise * 0.25 + 'px');
+      el.style.setProperty('--x2', dir * spread * 0.9 + 'px'); el.style.setProperty('--y2', -rise * 0.7 + 'px');
+      el.style.setProperty('--x3', dir * spread * 1.3 + (Math.random() * 30 - 15) + 'px'); el.style.setProperty('--y3', -rise * 1.15 + 'px');
+      el.style.setProperty('--r0', (Math.random() * 30 - 15) + 'deg'); el.style.setProperty('--r1', dir * (15 + Math.random() * 25) + 'deg');
+      el.style.animationDelay = (k * 45) + 'ms';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+    boop();
+  }
+  document.addEventListener('pointerdown', (ev) => {
+    if (ev.target.closest('button, a, .tooltip')) return;
+    flutter(ev.clientX, ev.clientY);
+  });
+
+  fetch('data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then((raw) => { loadData(raw); render(); })
+    .catch((e) => { $('foot').textContent = '데이터를 불러오지 못했어요. 잠시 후 다시 열어주세요. (' + e.message + ')'; });
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (config && months.length) render(); }, 120); });
+})();
+</script>
+
+</body>
+</html>
