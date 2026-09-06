@@ -370,7 +370,7 @@
     bar.className = current.kind === 'royal' ? 'royal' : current.gained >= current.goal ? 'good' : '';
     const remaining = current.goal - current.gained;
     const daysLeft = Math.max(0, daysBetween(today, current.end));
-    $('t-month-meta').textContent = `도달률 ${Math.min(999, Math.round(current.gained / current.goal * 100))}%`;
+    $('t-month-meta').textContent = '';
 
     $('t-pace').textContent = current.status;
     if (current.relation === 0 && current.inMonth.length && current.elapsedDays > 0) {
