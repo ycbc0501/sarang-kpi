@@ -88,7 +88,7 @@
   @media (min-width: 720px) { .tile { gap: 6px; min-height: 126px; padding: 16px 18px; border-radius: 18px; } }
   .tile .label { font-size: 10.5px; letter-spacing: 0.02em; color: var(--ink-3); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile .value { font-family: "Jua", "Nunito", system-ui, sans-serif; font-size: 24px; line-height: 1.05; color: var(--ink); word-break: keep-all; }
-  .tile .value.txt { line-height: 1.1; }
+  .tile .value.txt { line-height: 1.1; white-space: nowrap; }
   .tile .value small { font-size: 11px; color: var(--ink-2); margin-left: 3px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
   .tile .meta { color: var(--ink-2); font-size: 11px; line-height: 1.3; margin-top: auto; word-break: keep-all; }
   @media (min-width: 720px) { .tile .label { font-size: 12px; letter-spacing: 0.05em; } .tile .value { font-size: 36px; } .tile .value small { font-size: 15px; margin-left: 5px; } .tile .meta { font-size: 13px; } }
@@ -314,21 +314,13 @@
     });
   }
 
+  // three tiers only: 분발해 / 순항중 / 압도적
   function tier(gained, goal, expected, relation, hasData, elapsedDays) {
-    if (relation < 0) return { status: '예정 🗓️', kind: 'neutral' };
-    if (relation > 0) {
-      if (!hasData) return { status: '기록 없음', kind: 'neutral' };
-      if (gained >= goal * 1.5) return { status: '압도적 👑', kind: 'royal' };
-      if (gained >= goal) return { status: '목표 달성 🎉', kind: 'good' };
-      return { status: '아쉬워요 😢', kind: 'bad' };
-    }
-    if (!hasData) return { status: '아직 기록 없음', kind: 'neutral' };
+    if (relation < 0) return { status: '—', kind: 'neutral' };
     if (gained >= goal * 1.5) return { status: '압도적 👑', kind: 'royal' };
-    if (gained >= goal) return { status: '목표 달성 🎉', kind: 'good' };
-    if (gained >= expected) return { status: '잘하고 있어요 💖', kind: 'good' };
-    if (gained === 0 && elapsedDays <= 3) return { status: '이제 시작 🌱', kind: 'neutral' };
-    if (gained >= expected * 0.6) return { status: '조금만 더 🙌', kind: 'warn' };
-    return { status: '분발 필요 😤', kind: 'bad' };
+    const bar = relation > 0 ? goal : expected;
+    if (gained >= bar) return { status: '순항중 💖', kind: 'good' };
+    return { status: '분발해 😤', kind: 'bad' };
   }
 
   function buildMonths() {
@@ -351,7 +343,7 @@
       const elapsedDays = relation === 0 ? Math.min(totalDays, daysBetween(start, today) + 1) : (relation > 0 ? totalDays : 0);
       const expected = goal * (elapsedDays / totalDays);
       const t = tier(gained, goal, expected, relation, inMonth.length > 0, elapsedDays);
-      out.push({ i, key, start, end, goal, gained, latest, relation, totalDays, elapsedDays, inMonth, ...t });
+      out.push({ i, key, start, end, goal, gained, latest, relation, totalDays, elapsedDays, expected, inMonth, ...t });
     }
     return out;
   }
@@ -397,7 +389,8 @@
         const done = months.filter((m) => m.relation >= 0);
         const goalSum = done.reduce((a, m) => a + m.goal, 0);
         const gainSum = done.reduce((a, m) => a + m.gained, 0);
-        const t = gainSum >= goalSum * 1.5 ? { status: '압도적 👑', kind: 'royal' } : gainSum >= goalSum ? { status: '목표 달성 🎉', kind: 'good' } : { status: `${fmtInt(Math.round(gainSum / Math.max(1, goalSum) * 100))}% 진행`, kind: 'neutral' };
+        const expSum = done.reduce((a, m) => a + (m.relation > 0 ? m.goal : m.expected), 0);
+        const t = gainSum >= goalSum * 1.5 ? { status: '압도적 👑', kind: 'royal' } : gainSum >= expSum ? { status: '순항중 💖', kind: 'good' } : { status: '분발해 😤', kind: 'bad' };
         return `<tr class="total">
           <td>총계</td>
           <td class="r num">+${fmtInt(goalSum)}</td>
@@ -424,7 +417,7 @@
     if (!demo && staleDays !== null && staleDays >= 2) { stale.hidden = false; stale.textContent = `${longDate(lastAuto.date)} 이후로 자동 기록이 없어요.`; }
     else stale.hidden = true;
 
-    $('foot').innerHTML = `마지막 갱신 <b>${latest ? longDate(latest.date) : '없음'}</b> ♥`;
+    $('foot').innerHTML = `마지막 갱신 <b>${latest ? longDate(latest.date) : '없음'}</b> / By 💎`;
 
     // month tabs above the chart: past months stay clickable, the running month is selected by default
     $('tabs').innerHTML = months.map((m) => `<button type="button" class="tab ${m.key === selectedKey ? 'on' : ''}" data-key="${m.key}">${monthLabel(m.key, false)}${m.relation === 0 ? ' · 지금' : ''}</button>`).join('');
