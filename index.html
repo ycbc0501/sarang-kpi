@@ -214,7 +214,7 @@
     <div class="tile">
       <div class="label">지금 팔로워</div>
       <div class="value num" id="t-now">—</div>
-      <div class="meta" id="t-now-meta"></div>
+      <div class="meta" id="t-now-meta" hidden></div>
     </div>
     <div class="tile">
       <div class="label" id="t-month-label">이번 달 새 팔로워</div>
@@ -233,9 +233,9 @@
     <div class="card-head">
       <h2 id="chart-title">새 팔로워</h2>
       <div class="legend">
-        <span><i class="key" style="border-top-width:8px;border-radius:3px;width:10px;opacity:.55"></i>새 팔로워</span>
+        <span><i class="key" style="border-top-width:8px;border-radius:3px;width:10px;opacity:.55"></i>현재</span>
         <span><i class="key"></i>누적</span>
-        <span><i class="key target"></i>목표선</span>
+        <span><i class="key target"></i>목표</span>
       </div>
     </div>
     <div class="tabs" id="tabs"></div>
@@ -249,7 +249,6 @@
     <section class="card">
       <div class="card-head">
         <h2>월별 성적표</h2>
-        <span class="hint">새로 만난 사람만 세요 💗</span>
       </div>
       <div class="table-scroll">
         <table>
@@ -373,11 +372,10 @@
     $('handle').textContent = '@' + String(config.handle).replace(/^@/, '');
     const cheers = ['오늘도 예쁘게 빛나는 중 ♥', '운명의 팔로워가 오고 있어요 ♥', '한 명 한 명이 다 인연이에요 ♥', '이 페이지를 연 당신, 이미 사랑스러움 ♥', '오늘 스토리 하나 올리면 +1 ♥', '미래의 남편도 이 숫자를 보고 있을지도 ♥', '꾸준함이 제일 예쁜 매력 ♥'];
     $('cheer').textContent = cheers[(today.getDate() + today.getMonth()) % cheers.length];
-    $('check-hint').textContent = `${config.checkTime || '매일'} 자동 체크`;
+    $('check-hint').textContent = '11PM 자동갱신';
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
-    const grossAll = series.reduce((a, e) => a + e.gained, 0);
-    $('t-now-meta').textContent = latest ? `새 인연 +${fmtInt(grossAll)}명 💗` : '아직 기록이 없어요.';
+    $('t-now-meta').textContent = '';
 
     $('t-month-label').textContent = monthLabel(current.key, false) + ' 새 팔로워';
     $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}</small>`;
@@ -434,7 +432,7 @@
     if (!demo && staleDays !== null && staleDays >= 2) { stale.hidden = false; stale.textContent = `${longDate(lastAuto.date)} 이후로 자동 기록이 없어요.`; }
     else stale.hidden = true;
 
-    $('foot').innerHTML = `클레어의 팔로워는 <b>${config.checkTime || '매일'}</b>에 요정이 자동으로 세어요 ♥ 마지막 기록 ${latest ? longDate(latest.date) : '없음'}.`;
+    $('foot').innerHTML = `마지막 갱신 <b>${latest ? longDate(latest.date) : '없음'}</b> ♥`;
 
     // month tabs above the chart: past months stay clickable, the running month is selected by default
     $('tabs').innerHTML = months.map((m) => `<button type="button" class="tab ${m.key === selectedKey ? 'on' : ''}" data-key="${m.key}">${monthLabel(m.key, false)}${m.relation === 0 ? ' · 지금' : ''}</button>`).join('');
