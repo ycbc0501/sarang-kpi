@@ -88,13 +88,10 @@
   @media (min-width: 720px) { .tile { gap: 6px; min-height: 126px; padding: 16px 18px; border-radius: 18px; } }
   .tile .label { font-size: 10.5px; letter-spacing: 0.02em; color: var(--ink-3); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile .value { font-family: "Jua", "Nunito", system-ui, sans-serif; font-size: 24px; line-height: 1.05; color: var(--ink); word-break: keep-all; }
-  .tile .value.txt { font-size: 15px; line-height: 1.2; }
+  .tile .value.txt { line-height: 1.1; }
   .tile .value small { font-size: 11px; color: var(--ink-2); margin-left: 3px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
   .tile .meta { color: var(--ink-2); font-size: 11px; line-height: 1.3; margin-top: auto; word-break: keep-all; }
-  @media (min-width: 720px) { .tile .label { font-size: 12px; letter-spacing: 0.05em; } .tile .value { font-size: 36px; } .tile .value.txt { font-size: 26px; } .tile .value small { font-size: 15px; margin-left: 5px; } .tile .meta { font-size: 13px; } }
-  .spark { margin-top: auto; height: 30px; position: relative; }
-  .spark svg { width: 100%; height: 100%; display: block; }
-  @media (min-width: 720px) { .spark { height: 40px; } }
+  @media (min-width: 720px) { .tile .label { font-size: 12px; letter-spacing: 0.05em; } .tile .value { font-size: 36px; } .tile .value small { font-size: 15px; margin-left: 5px; } .tile .meta { font-size: 13px; } }
   .bar { height: 6px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; }
   @media (min-width: 720px) { .bar { height: 8px; } }
   .bar > i { display: block; height: 100%; background: var(--pink); border-radius: 4px; transition: width 300ms ease; }
@@ -213,7 +210,6 @@
     <div class="tile">
       <div class="label">지금 팔로워</div>
       <div class="value num" id="t-now">—</div>
-      <div class="spark" id="t-now-spark" aria-hidden="true"></div>
     </div>
     <div class="tile">
       <div class="label" id="t-month-label">이번 달 새 팔로워</div>
@@ -374,7 +370,6 @@
     $('check-hint').textContent = '11PM 자동갱신';
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
-    drawSpark(series.slice(-30));
 
     $('t-month-label').textContent = monthLabel(current.key, false) + ' 새 팔로워';
     $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}</small>`;
@@ -436,28 +431,6 @@
     const sel = months.find((m) => m.key === selectedKey) || current;
     $('chart-title').textContent = `${monthLabel(sel.key, false)} 새 팔로워`;
     drawChart(sel);
-  }
-
-  // tiny trend of the raw follower count, last 30 records
-  function drawSpark(list) {
-    const el = $('t-now-spark');
-    const W = 200, H = 40, p = 4;
-    const pts = list.length ? list : [{ count: config.baseline }];
-    const vals = pts.map((e) => e.count);
-    let lo = Math.min(...vals), hi = Math.max(...vals);
-    if (hi - lo < 4) { const mid = (hi + lo) / 2; lo = mid - 2; hi = mid + 2; }
-    const x = (i) => pts.length === 1 ? W - p : p + (i / (pts.length - 1)) * (W - 2 * p);
-    const y = (v) => p + (1 - (v - lo) / (hi - lo)) * (H - 2 * p);
-    const line = pts.map((e, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(e.count).toFixed(1)}`).join(' ');
-    const area = pts.length > 1 ? `${line} L${x(pts.length - 1).toFixed(1)},${H} L${x(0).toFixed(1)},${H} Z` : '';
-    const lx = x(pts.length - 1), ly = y(pts[pts.length - 1].count);
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      ${area ? `<path d="${area}" fill="#f06292" opacity="0.12"/>` : ''}
-      ${pts.length > 1 ? `<path d="${line}" fill="none" stroke="#f06292" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : `<path d="M${p},${ly.toFixed(1)} L${lx.toFixed(1)},${ly.toFixed(1)}" fill="none" stroke="#f5b8cc" stroke-width="2" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>`}
-    </svg>${heartDot(lx / W * 100, ly / H * 100)}`;
-  }
-  function heartDot(px, py) {
-    return `<span style="position:absolute;left:${px}%;top:${py}%;transform:translate(-50%,-55%);font-size:12px;line-height:1">💗</span>`;
   }
 
   function chip(w) {
