@@ -317,10 +317,10 @@
   // three tiers only: 분발해 / 순항중 / 압도적
   function tier(gained, goal, expected, relation, hasData, elapsedDays) {
     if (relation < 0) return { status: '—', kind: 'neutral' };
-    if (gained >= goal * 1.5) return { status: '압도적 👑', kind: 'royal' };
-    const bar = relation > 0 ? goal : expected;
-    if (gained >= bar) return { status: '순항중 💖', kind: 'good' };
-    return { status: '분발해 😤', kind: 'bad' };
+    const bar = relation > 0 ? goal : expected;   // past month: its goal; this month: goal pro-rated to today
+    if (gained > bar * 1.2) return { status: '압도적 👑', kind: 'royal' };
+    if (gained < bar * 0.8) return { status: '분발해 😤', kind: 'bad' };
+    return { status: '순항중 💖', kind: 'good' };
   }
 
   function buildMonths() {
@@ -390,7 +390,7 @@
         const goalSum = done.reduce((a, m) => a + m.goal, 0);
         const gainSum = done.reduce((a, m) => a + m.gained, 0);
         const expSum = done.reduce((a, m) => a + (m.relation > 0 ? m.goal : m.expected), 0);
-        const t = gainSum >= goalSum * 1.5 ? { status: '압도적 👑', kind: 'royal' } : gainSum >= expSum ? { status: '순항중 💖', kind: 'good' } : { status: '분발해 😤', kind: 'bad' };
+        const t = gainSum > expSum * 1.2 ? { status: '압도적 👑', kind: 'royal' } : gainSum < expSum * 0.8 ? { status: '분발해 😤', kind: 'bad' } : { status: '순항중 💖', kind: 'good' };
         return `<tr class="total">
           <td>총계</td>
           <td class="r num">+${fmtInt(goalSum)}</td>
