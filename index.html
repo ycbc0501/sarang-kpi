@@ -83,19 +83,21 @@
   .pill.neutral { background: var(--neutral-bg); color: var(--ink-2); }
   .pill.big { font-size: 15px; padding: 6px 14px; }
 
-  .tiles { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  @media (min-width: 720px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  @media (min-width: 720px) { .tiles { gap: 14px; } }
   .tile {
-    background: var(--surface); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); border: 2px solid var(--line);
-    display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+    background: var(--surface); border-radius: 14px; padding: 10px 10px 9px; box-shadow: var(--shadow); border: 2px solid var(--line);
+    display: flex; flex-direction: column; align-items: stretch; gap: 4px; min-width: 0;
   }
-  @media (min-width: 720px) { .tile { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-height: 126px; padding: 16px 18px; } }
-  .tile .label { font-size: 12px; letter-spacing: 0.05em; color: var(--ink-3); font-weight: 800; grid-column: 1 / -1; }
-  .tile .value { font-family: "Jua", "Nunito", system-ui, sans-serif; font-size: 32px; line-height: 1.05; color: var(--ink); }
-  .tile .value small { font-size: 15px; color: var(--ink-2); margin-left: 5px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
-  .tile .meta { color: var(--ink-2); font-size: 13px; grid-column: 1 / -1; }
-  @media (min-width: 720px) { .tile .meta { margin-top: auto; } .tile .value { font-size: 36px; } }
-  .bar { height: 8px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; grid-column: 1 / -1; }
+  @media (min-width: 720px) { .tile { gap: 6px; min-height: 126px; padding: 16px 18px; border-radius: 18px; } }
+  .tile .label { font-size: 10.5px; letter-spacing: 0.02em; color: var(--ink-3); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .value { font-family: "Jua", "Nunito", system-ui, sans-serif; font-size: 24px; line-height: 1.05; color: var(--ink); word-break: keep-all; }
+  .tile .value.txt { font-size: 15px; line-height: 1.2; }
+  .tile .value small { font-size: 11px; color: var(--ink-2); margin-left: 3px; font-family: "Nunito", "Noto Sans KR", system-ui, sans-serif; font-weight: 700; }
+  .tile .meta { color: var(--ink-2); font-size: 11px; line-height: 1.3; margin-top: auto; word-break: keep-all; }
+  @media (min-width: 720px) { .tile .label { font-size: 12px; letter-spacing: 0.05em; } .tile .value { font-size: 36px; } .tile .value.txt { font-size: 26px; } .tile .value small { font-size: 15px; margin-left: 5px; } .tile .meta { font-size: 13px; } }
+  .bar { height: 6px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 720px) { .bar { height: 8px; } }
   .bar > i { display: block; height: 100%; background: var(--pink); border-radius: 4px; transition: width 300ms ease; }
   .bar > i.good { background: var(--good); }
 
@@ -222,7 +224,7 @@
     </div>
     <div class="tile">
       <div class="label">페이스</div>
-      <div class="value" id="t-pace">—</div>
+      <div class="value txt" id="t-pace">—</div>
       <div class="meta" id="t-pace-meta"></div>
     </div>
   </section>
@@ -375,17 +377,17 @@
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
     const grossAll = series.reduce((a, e) => a + e.gained, 0);
-    $('t-now-meta').textContent = latest ? `새로 만난 사람 +${fmtInt(grossAll)}명 💗` : '아직 기록이 없어요.';
+    $('t-now-meta').textContent = latest ? `새 인연 +${fmtInt(grossAll)}명 💗` : '아직 기록이 없어요.';
 
     $('t-month-label').textContent = monthLabel(current.key, false) + ' 새 팔로워';
-    $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}명</small>`;
+    $('t-month').innerHTML = `+${fmtInt(current.gained)}<small>/ ${fmtInt(current.goal)}</small>`;
     const pct = Math.max(0, Math.min(100, (current.gained / current.goal) * 100));
     const bar = $('t-month-bar'); bar.style.width = pct + '%';
     bar.className = current.kind === 'royal' ? 'royal' : current.gained >= current.goal ? 'good' : '';
     const remaining = current.goal - current.gained;
     const daysLeft = Math.max(0, daysBetween(today, current.end));
     $('t-month-meta').textContent = current.relation === 0
-      ? (remaining > 0 ? `${fmtInt(remaining)}명 더 · ${daysLeft}일 남음` : `${daysLeft}일 남기고 목표 달성! 🎉`)
+      ? (remaining > 0 ? `${fmtInt(remaining)}명 더 · ${daysLeft}일 남음` : `목표 달성! 🎉`)
       : '';
 
     $('t-pace').textContent = current.status;
