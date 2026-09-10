@@ -361,8 +361,7 @@
     const latest = series.length ? series[series.length - 1] : null;
 
     $('handle').textContent = '@' + String(config.handle).replace(/^@/, '');
-    const cheers = ['오늘도 예쁘게 빛나는 중 ♥', '운명의 팔로워가 오고 있어요 ♥', '한 명 한 명이 다 인연이에요 ♥', '이 페이지를 연 당신, 이미 사랑스러움 ♥', '오늘 스토리 하나 올리면 +1 ♥', '미래의 남편도 이 숫자를 보고 있을지도 ♥', '꾸준함이 제일 예쁜 매력 ♥'];
-    $('cheer').textContent = cheers[(today.getDate() + today.getMonth()) % cheers.length];
+    $('cheer').textContent = '운명의 팔로워가 오고 있어요 ♥';
     $('check-hint').textContent = '11PM 자동갱신';
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
