@@ -8,30 +8,48 @@ HANDLE="clairelee_sunshine"
 cd "$DIR" || exit 1
 log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
 
-fetch_meta() {
-  curl -s -m 30 -L -A "$1" "https://www.instagram.com/$HANDLE/" \
-    | grep -o '<meta property="og:description" content="[^"]*"' | head -1
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+PROFILE="$DIR/chrome-profile"
+DOM="$DIR/.last-dom.html"
+
+# Primary: render the real page with headless Chrome. Instagram's link-preview meta tag lags
+# behind by days, but the rendered page shows the live count as <span title="277">...</span> followers.
+render_page() {
+  rm -f "$DOM"
+  "$CHROME" --headless=new --disable-gpu --no-first-run --no-default-browser-check \
+    --user-data-dir="$PROFILE" --timeout=40000 --virtual-time-budget=8000 \
+    --dump-dom "https://www.instagram.com/$HANDLE/" > "$DOM" 2>/dev/null &
+  local pid=$!
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null && (( waited < 75 )); do sleep 1; (( waited++ )); done
+  kill "$pid" 2>/dev/null; sleep 1; kill -9 "$pid" 2>/dev/null
+  wait "$pid" 2>/dev/null
 }
 
-META="$(fetch_meta 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)')"
-if [[ -z "$META" ]]; then
-  sleep 60
-  META="$(fetch_meta 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')"
-fi
-if [[ -z "$META" ]]; then
-  log "FAIL no og:description from instagram"
-  exit 2
-fi
-
-COUNT="$(print -r -- "$META" | python3 -c '
+COUNT=""
+for attempt in 1 2; do
+  render_page
+  COUNT="$(python3 - "$DOM" <<'PY'
 import re, sys
-m = re.search(r"content=\"([\d.,]+[KkMm]?) Followers", sys.stdin.read())
+try:
+    s = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
+except Exception:
+    sys.exit(1)
+m = re.search(r'title="([\d,.]+[KkMm]?)"\s*>\s*<span[^>]*>[^<]*</span>\s*</span>\s*followers', s)
 if not m: sys.exit(1)
 v = m.group(1).replace(",", "")
 mult = {"k": 1000, "m": 1000000}.get(v[-1].lower(), 1)
 if mult != 1: v = v[:-1]
 print(int(round(float(v) * mult)))
-')" || { log "FAIL could not parse: $META"; exit 3; }
+PY
+)" && break
+  COUNT=""; sleep 30
+done
+
+if [[ -z "$COUNT" ]]; then
+  log "FAIL could not read live follower count from rendered page"
+  exit 2
+fi
 
 TODAY="$(TZ=Asia/Seoul date +%F)"
 python3 - "$TODAY" "$COUNT" <<'PY'

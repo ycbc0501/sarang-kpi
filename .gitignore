@@ -1,3 +1,5 @@
-update.log
-launchd.*.log
 .DS_Store
+.last-dom.html
+chrome-profile/
+launchd.*.log
+update.log
