@@ -2,7 +2,7 @@
 # 사랑 찾는 KPI — reads Claire's public follower count once and publishes it to GitHub Pages.
 set -u
 export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-DIR="$HOME/Documents/no2/sarang-kpi"
+DIR="$HOME/sarang-kpi"
 LOG="$DIR/update.log"
 HANDLE="clairelee_sunshine"
 cd "$DIR" || exit 1
@@ -43,8 +43,9 @@ entries = d.setdefault("entries", [])
 hit = next((e for e in entries if e.get("date") == date), None)
 if hit:
     hit["count"] = count; hit["source"] = "auto"
+    hit["peak"] = max(int(hit.get("peak", hit["count"])), count)
 else:
-    entries.append({"date": date, "count": count, "note": "", "source": "auto"})
+    entries.append({"date": date, "count": count, "peak": count, "note": "", "source": "auto"})
 entries.sort(key=lambda e: e["date"])
 json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 open(p, "a", encoding="utf-8").write("\n")

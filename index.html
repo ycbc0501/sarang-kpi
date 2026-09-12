@@ -298,7 +298,7 @@
 
   let config = null, realEntries = [];
   const clean = (list) => list.filter((e) => /^\d{4}-\d{2}-\d{2}$/.test(String(e.date)) && Number.isFinite(Number(e.count)))
-    .map((e) => ({ date: String(e.date), count: Number(e.count), note: e.note ? String(e.note) : '', source: e.source === 'auto' ? 'auto' : 'manual', who: Array.isArray(e.who) ? e.who.map((w) => typeof w === 'string' ? { id: w } : { id: String(w.id || ''), pfp: w.pfp && /^data:image\//.test(String(w.pfp)) ? String(w.pfp) : '' }).filter((w) => w.id) : [] }))
+    .map((e) => ({ date: String(e.date), count: Number(e.count), peak: Number.isFinite(Number(e.peak)) ? Math.max(Number(e.peak), Number(e.count)) : Number(e.count), note: e.note ? String(e.note) : '', source: e.source === 'auto' ? 'auto' : 'manual', who: Array.isArray(e.who) ? e.who.map((w) => typeof w === 'string' ? { id: w } : { id: String(w.id || ''), pfp: w.pfp && /^data:image\//.test(String(w.pfp)) ? String(w.pfp) : '' }).filter((w) => w.id) : [] }))
     .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
   let startDate = realToday;
   function loadData(raw) {
@@ -314,7 +314,7 @@
     return entries.map((e, i) => {
       const prev = i > 0 ? entries[i - 1].count : config.baseline;
       const net = e.count - prev;
-      return { ...e, net, gained: i === 0 ? 0 : Math.max(0, net) };
+      return { ...e, net, gained: i === 0 ? 0 : Math.max(0, e.peak - prev) };   // peak: the day's highest reading
     });
   }
 
@@ -362,7 +362,7 @@
 
     $('handle').textContent = '@' + String(config.handle).replace(/^@/, '');
     $('cheer').textContent = '운명의 팔로워가 오고 있어요 ♥';
-    $('check-hint').textContent = '11PM 자동갱신';
+    $('check-hint').textContent = '매시간 자동갱신';
 
     $('t-now').textContent = fmtInt(latest ? latest.count : config.baseline);
     $('t-now-meta').textContent = `(${longDate(isoDate(startDate))} ${fmtInt(config.baseline)}명)`;
