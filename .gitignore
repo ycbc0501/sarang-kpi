@@ -2,4 +2,5 @@
 .last-dom.html
 chrome-profile/
 launchd.*.log
+node_modules/
 update.log

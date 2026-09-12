@@ -526,9 +526,7 @@
       let best = null;
       for (const c of chartState.cum) { if (!best || Math.abs(chartState.xd(c.i) - px) < Math.abs(chartState.xd(best.i) - px)) best = c; }
       if (!best) return;
-      const who = best.e.who.length ? `<div class="who-list">${best.e.who.map(chip).join('')}</div>`
-        : (best.gained > 0 ? `<div class="row"><span class="hint">누군지는 인스타가 안 알려줘요 🙈</span></div>` : '');
-      tip.innerHTML = `<b>${longDate(best.e.date)} · +${fmtInt(best.gained)} 💗</b>${who}`;
+      tip.innerHTML = `<b>${longDate(best.e.date)} · +${fmtInt(best.gained)} 💗</b>`;
       const scale = box.width / chartState.W;
       tip.style.left = Math.max(90, Math.min(box.width - 90, chartState.xd(best.i) * scale)) + 'px';
       tip.style.top = (chartState.ys(best.cum) * scale - 16) + 'px';
