@@ -1,19 +1,59 @@
 #!/bin/zsh
 # 사랑 찾는 KPI — reads Claire's public follower count once and publishes it to GitHub Pages.
+# Runs hourly via launchd (com.sarang-kpi.update). Log: update.log. Exit codes: 0 ok, 2 no count,
+# 3 another run in progress, 4 commit failed, 5 push failed, 6 Chrome missing.
 set -u
 export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 DIR="$HOME/sarang-kpi"
 LOG="$DIR/update.log"
 HANDLE="clairelee_sunshine"
-cd "$DIR" || exit 1
-log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
-
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 PROFILE="$DIR/chrome-profile"
 DOM="$DIR/.last-dom.html"
+RUNLOCK="$DIR/.run.lock"          # directory; mkdir is atomic
+FAILS="$DIR/.fail-count"          # consecutive failures
+NOTIFIED="$DIR/.notified-at"      # epoch of the last failure notification
+NOTIFY_AFTER=3                    # notify after this many consecutive failures (= hours)
+NOTIFY_EVERY=$((24*3600))         # and at most once per day after that
 
-# Primary: render the real page with headless Chrome. Instagram's link-preview meta tag lags
-# behind by days, but the rendered page shows the live count as <span title="277">...</span> followers.
+cd "$DIR" || exit 1
+log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
+notify() { osascript -e "display notification \"$2\" with title \"사랑 찾는 KPI\" subtitle \"$1\"" >/dev/null 2>&1 || true; }
+
+# ---- single-run lock: two runs sharing the Chrome profile would kill each other ----
+if ! mkdir "$RUNLOCK" 2>/dev/null; then
+  # a run older than 15 minutes is a crashed one; take the lock over
+  if [[ -n "$(find "$RUNLOCK" -maxdepth 0 -mmin +15 2>/dev/null)" ]]; then
+    rmdir "$RUNLOCK" 2>/dev/null; mkdir "$RUNLOCK" 2>/dev/null || { log "SKIP could not take run lock"; exit 3; }
+    log "WARN stale run lock taken over"
+  else
+    log "SKIP another run is in progress"; exit 3
+  fi
+fi
+trap 'rmdir "$RUNLOCK" 2>/dev/null' EXIT
+
+# ---- failure bookkeeping: count consecutive failures, notify once they persist ----
+fail() {
+  local n=$(( $(cat "$FAILS" 2>/dev/null || echo 0) + 1 ))
+  print -r -- "$n" > "$FAILS"
+  log "FAIL $1 (consecutive: $n)"
+  local last=$(cat "$NOTIFIED" 2>/dev/null || echo 0) now=$(date +%s)
+  if (( n >= NOTIFY_AFTER && now - last >= NOTIFY_EVERY )); then
+    notify "업데이트 ${n}회 연속 실패" "$1 — ~/sarang-kpi/update.log 확인"
+    print -r -- "$now" > "$NOTIFIED"
+    log "NOTIFIED user about persistent failure"
+  fi
+  exit "$2"
+}
+succeed_bookkeeping() {
+  local n=$(cat "$FAILS" 2>/dev/null || echo 0)
+  if (( n >= NOTIFY_AFTER )); then notify "복구됨" "${n}회 실패 후 다시 정상 기록 중"; log "RECOVERED after $n failures"; fi
+  rm -f "$FAILS" "$NOTIFIED"
+}
+
+[[ -x "$CHROME" ]] || fail "Google Chrome not found at $CHROME" 6
+
+# ---- Chrome profile hygiene ----
 # A leftover Chrome holding this profile's SingletonLock makes every new launch hand off its URL
 # and exit with an empty DOM (this silently broke updates 2026-09-13 ~ 2026-09-27). Clear it first.
 release_profile() {
@@ -22,6 +62,8 @@ release_profile() {
   rm -f "$PROFILE/SingletonLock" "$PROFILE/SingletonCookie" "$PROFILE/SingletonSocket"
 }
 
+# Render the real page with headless Chrome. Instagram's link-preview meta tag lags behind by days,
+# but the rendered page shows the live count as <span title="277">...</span> followers.
 render_page() {
   rm -f "$DOM"
   release_profile
@@ -36,10 +78,8 @@ render_page() {
   release_profile
 }
 
-COUNT=""
-for attempt in 1 2; do
-  render_page
-  COUNT="$(python3 - "$DOM" <<'PY'
+parse_count() {
+  python3 - "$DOM" <<'PY'
 import re, sys
 try:
     s = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
@@ -52,17 +92,22 @@ mult = {"k": 1000, "m": 1000000}.get(v[-1].lower(), 1)
 if mult != 1: v = v[:-1]
 print(int(round(float(v) * mult)))
 PY
-)" && break
-  COUNT=""; sleep 30
-done
+}
+
+COUNT=""
+if [[ -z "${SARANG_FORCE_FAIL:-}" ]]; then
+  for attempt in 1 2; do
+    render_page
+    COUNT="$(parse_count)" && break
+    COUNT=""; sleep 30
+  done
+fi
 
 if [[ -z "$COUNT" ]]; then
-  if [[ ! -s "$DOM" ]]; then
-    log "FAIL headless Chrome produced an empty DOM (profile lock or Chrome launch problem)"
-  else
-    log "FAIL could not parse live follower count from rendered page ($(wc -c < "$DOM" | tr -d ' ') bytes; title: $(grep -o '<title>[^<]*' "$DOM" | head -1 | cut -c8-80))"
+  if [[ -n "${SARANG_FORCE_FAIL:-}" ]]; then fail "forced failure (test)" 2
+  elif [[ ! -s "$DOM" ]]; then fail "headless Chrome produced an empty DOM (profile lock or Chrome launch problem)" 2
+  else fail "could not parse follower count from rendered page ($(wc -c < "$DOM" | tr -d ' ') bytes; title: $(grep -o '<title>[^<]*' "$DOM" | head -1 | cut -c8-80))" 2
   fi
-  exit 2
 fi
 
 TODAY="$(TZ=Asia/Seoul date +%F)"
@@ -83,15 +128,17 @@ json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 open(p, "a", encoding="utf-8").write("\n")
 PY
 
-if git diff --quiet -- data.json; then
-  log "OK $TODAY count=$COUNT (unchanged, nothing to push)"
-  exit 0
+if ! git diff --quiet -- data.json; then
+  git add data.json
+  git commit -q -m "record $TODAY: $COUNT followers" || fail "git commit" 4
 fi
-git add data.json
-git commit -q -m "record $TODAY: $COUNT followers" || { log "FAIL commit"; exit 4; }
-if git push -q origin main; then
+
+# Push whenever local is ahead, so a commit whose push failed earlier is not stranded until the count changes.
+if [[ -n "$(git log origin/main..main --oneline 2>/dev/null)" ]]; then
+  git push -q origin main || fail "git push (will retry next run)" 5
   log "OK $TODAY count=$COUNT pushed"
 else
-  log "FAIL push (will retry next run)"
-  exit 5
+  log "OK $TODAY count=$COUNT (unchanged, nothing to push)"
 fi
+succeed_bookkeeping
+exit 0

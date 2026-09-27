@@ -4,3 +4,6 @@ chrome-profile/
 launchd.*.log
 node_modules/
 update.log
+.run.lock/
+.fail-count
+.notified-at
