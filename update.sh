@@ -14,8 +14,17 @@ DOM="$DIR/.last-dom.html"
 
 # Primary: render the real page with headless Chrome. Instagram's link-preview meta tag lags
 # behind by days, but the rendered page shows the live count as <span title="277">...</span> followers.
+# A leftover Chrome holding this profile's SingletonLock makes every new launch hand off its URL
+# and exit with an empty DOM (this silently broke updates 2026-09-13 ~ 2026-09-27). Clear it first.
+release_profile() {
+  pkill -f "user-data-dir=$PROFILE" 2>/dev/null && sleep 2
+  pkill -9 -f "user-data-dir=$PROFILE" 2>/dev/null
+  rm -f "$PROFILE/SingletonLock" "$PROFILE/SingletonCookie" "$PROFILE/SingletonSocket"
+}
+
 render_page() {
   rm -f "$DOM"
+  release_profile
   "$CHROME" --headless=new --disable-gpu --no-first-run --no-default-browser-check \
     --user-data-dir="$PROFILE" --timeout=40000 --virtual-time-budget=8000 \
     --dump-dom "https://www.instagram.com/$HANDLE/" > "$DOM" 2>/dev/null &
@@ -24,6 +33,7 @@ render_page() {
   while kill -0 "$pid" 2>/dev/null && (( waited < 75 )); do sleep 1; (( waited++ )); done
   kill "$pid" 2>/dev/null; sleep 1; kill -9 "$pid" 2>/dev/null
   wait "$pid" 2>/dev/null
+  release_profile
 }
 
 COUNT=""
@@ -47,7 +57,11 @@ PY
 done
 
 if [[ -z "$COUNT" ]]; then
-  log "FAIL could not read live follower count from rendered page"
+  if [[ ! -s "$DOM" ]]; then
+    log "FAIL headless Chrome produced an empty DOM (profile lock or Chrome launch problem)"
+  else
+    log "FAIL could not parse live follower count from rendered page ($(wc -c < "$DOM" | tr -d ' ') bytes; title: $(grep -o '<title>[^<]*' "$DOM" | head -1 | cut -c8-80))"
+  fi
   exit 2
 fi
 
