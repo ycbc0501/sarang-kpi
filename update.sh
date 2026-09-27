@@ -135,6 +135,8 @@ fi
 
 # Push whenever local is ahead, so a commit whose push failed earlier is not stranded until the count changes.
 if [[ -n "$(git log origin/main..main --oneline 2>/dev/null)" ]]; then
+  # pick up anything pushed from elsewhere (e.g. index.html edits) so the push is a fast-forward
+  git pull -q --rebase origin main 2>/dev/null || log "WARN rebase onto origin/main failed; pushing anyway"
   git push -q origin main || fail "git push (will retry next run)" 5
   log "OK $TODAY count=$COUNT pushed"
 else
