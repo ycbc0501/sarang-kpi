@@ -1,6 +1,6 @@
 #!/bin/zsh
 # 사랑 찾는 KPI — reads Claire's public follower count once and publishes it to GitHub Pages.
-# Runs hourly via launchd (com.sarang-kpi.update). Log: update.log. Exit codes: 0 ok, 2 no count,
+# Runs hourly from loop.sh (launchd KeepAlive agent com.sarang-kpi.update). Log: update.log. Exit codes: 0 ok, 2 no count,
 # 3 another run in progress, 4 commit failed, 5 push failed, 6 Chrome missing.
 set -u
 export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -18,7 +18,12 @@ NOTIFY_EVERY=$((24*3600))         # and at most once per day after that
 
 cd "$DIR" || exit 1
 log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }
-notify() { osascript -e "display notification \"$2\" with title \"사랑 찾는 KPI\" subtitle \"$1\"" >/dev/null 2>&1 || true; }
+# Telegram DM to the user's phone (집컴 is headless, nobody sees its screen); falls back to a macOS banner.
+notify() {
+  if [[ -x "$DIR/notify.sh" ]] && "$DIR/notify.sh" "$1" "$2"; then log "NOTIFY telegram: $1"; return; fi
+  osascript -e "display notification \"$2\" with title \"사랑 찾는 KPI\" subtitle \"$1\"" >/dev/null 2>&1 || true
+  log "NOTIFY telegram failed, macOS banner only: $1"
+}
 
 # ---- single-run lock: two runs sharing the Chrome profile would kill each other ----
 if ! mkdir "$RUNLOCK" 2>/dev/null; then

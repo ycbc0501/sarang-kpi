@@ -4,9 +4,10 @@
 <dict>
   <key>Label</key><string>com.sarang-kpi.update</string>
   <key>ProgramArguments</key>
-  <array><string>/bin/zsh</string><string>/Users/memyselfi/sarang-kpi/update.sh</string></array>
-  <key>StartInterval</key><integer>3600</integer>
+  <array><string>/bin/zsh</string><string>/Users/memyselfi/sarang-kpi/loop.sh</string></array>
+  <key>KeepAlive</key><true/>
   <key>RunAtLoad</key><true/>
+  <key>ThrottleInterval</key><integer>60</integer>
   <key>StandardOutPath</key><string>/Users/memyselfi/sarang-kpi/launchd.out.log</string>
   <key>StandardErrorPath</key><string>/Users/memyselfi/sarang-kpi/launchd.err.log</string>
 </dict>
