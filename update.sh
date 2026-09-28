@@ -116,11 +116,13 @@ if [[ -z "$COUNT" ]]; then
 fi
 
 TODAY="$(TZ=Asia/Seoul date +%F)"
-python3 - "$TODAY" "$COUNT" <<'PY'
+NOW="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')"
+python3 - "$TODAY" "$COUNT" "$NOW" <<'PY'
 import json, sys
-date, count = sys.argv[1], int(sys.argv[2])
+date, count, now = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 p = "data.json"
 d = json.load(open(p, encoding="utf-8"))
+d["updatedAt"] = now
 entries = d.setdefault("entries", [])
 hit = next((e for e in entries if e.get("date") == date), None)
 if hit:

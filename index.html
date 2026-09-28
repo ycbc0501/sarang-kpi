@@ -296,13 +296,13 @@
   const realToday = new Date(); realToday.setHours(0, 0, 0, 0);
   let today = realToday, todayKey = monthKeyOf(today);
 
-  let config = null, realEntries = [];
+  let config = null, realEntries = [], updatedAt = '';
   const clean = (list) => list.filter((e) => /^\d{4}-\d{2}-\d{2}$/.test(String(e.date)) && Number.isFinite(Number(e.count)))
     .map((e) => ({ date: String(e.date), count: Number(e.count), peak: Number.isFinite(Number(e.peak)) ? Math.max(Number(e.peak), Number(e.count)) : Number(e.count), note: e.note ? String(e.note) : '', source: e.source === 'auto' ? 'auto' : 'manual', who: Array.isArray(e.who) ? e.who.map((w) => typeof w === 'string' ? { id: w } : { id: String(w.id || ''), pfp: w.pfp && /^data:image\//.test(String(w.pfp)) ? String(w.pfp) : '' }).filter((w) => w.id) : [] }))
     .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
   let startDate = realToday;
   function loadData(raw) {
-    config = raw.config; realEntries = clean((raw.entries || []).slice()); entries = realEntries;
+    config = raw.config; realEntries = clean((raw.entries || []).slice()); entries = realEntries; updatedAt = typeof raw.updatedAt === 'string' ? raw.updatedAt : '';
     startDate = /^\d{4}-\d{2}-\d{2}$/.test(String(config.startDate)) ? parseDate(config.startDate) : monthStart(config.startMonth);
     config.startMonth = monthKeyOf(startDate);
   }
@@ -421,7 +421,9 @@
     if (!demo && staleDays !== null && staleDays >= 2) { stale.hidden = false; stale.textContent = `${longDate(lastAuto.date)} 이후로 자동 기록이 없어요.`; }
     else stale.hidden = true;
 
-    $('foot').innerHTML = `마지막 갱신 <b>${latest ? longDate(latest.date) : '없음'}</b> / By 💎`;
+    const stampMatch = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(updatedAt);
+    const stamp = stampMatch ? `${Number(stampMatch[2])}월 ${Number(stampMatch[3])}일 ${Number(stampMatch[4])}시 ${stampMatch[5]}분` : latest ? longDate(latest.date) : '없음';
+    $('foot').innerHTML = `마지막 갱신 <b>${stamp}</b> / By 💎`;
 
     // month tabs above the chart: past months stay clickable, the running month is selected by default
     $('tabs').innerHTML = months.map((m) => `<button type="button" class="tab ${m.key === selectedKey ? 'on' : ''}" data-key="${m.key}">${monthLabel(m.key, false)}${m.relation === 0 ? ' · 지금' : ''}</button>`).join('');
